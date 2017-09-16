@@ -16,6 +16,18 @@ $ cd $GOPATH/src
 $ git clone git@github.com:xiaowei520/gin-restful.git
 ```
 
+```
+## 运行
+```sh
+在当前gin-restful 目录下 go run *.go  编译加载路由
+
+编译二进制项目
+go build -o gin-restful-test-v1.0.0
+
+监听本地端口8000
+通过浏览器访问  http://localhost:8000/
+
+```
 
 ```
 ## 目录结构
@@ -37,12 +49,4 @@ util            公共工具
   ├ ext2       *
   └ ext3       *
 ```
-
-```
-## 运行
-```sh
-在当前gin-restful 目录下 go run *.go  编译加载路由
-
-编译二进制项目
-go build -o gin-restful-test-v1.0.0
 
