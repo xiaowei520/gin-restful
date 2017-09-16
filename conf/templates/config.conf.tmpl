@@ -1,0 +1,51 @@
+# default false
+release_mode = {{getv "/release_mode"}}
+
+# default DEBUG, DEBUG INFO WARN ERROR OFF
+log_level = "{{getv "/log_level"}}"
+
+# REDIS,FILE,COOKIE(COOKIE Default)
+session_store = "{{getv "/session_store"}}"
+
+# REDIS,MEMCACHED,IN_MEMORY(IN_MEMORY Default)
+cache_store = "{{getv "/cache_store"}}"
+
+[app]
+name = "{{getv "/app/name"}}"
+
+[server]
+graceful = {{getv "/server/graceful"}}
+addr = "{{getv "/server/addr"}}"
+
+# Domains
+domain_api = "{{getv "/server/domain_api"}}"
+domain_web = "{{getv "/server/domain_web"}}"
+domain_socket = "{{getv "/server/domain_socket"}}"
+
+[static]
+# BINDATA,FILE(FILE Default)
+type = "{{getv "/static/type"}}"
+
+[tmpl]
+# PONGO2,TEMPLATE(TEMPLATE Default)
+type = "{{getv "/tmpl/type"}}"
+# BINDATA,FILE(FILE Default)
+data = "{{getv "/tmpl/data"}}"
+# PONGO2(template/pongo2),TEMPLATE(template)
+dir = "{{getv "/tmpl/dir"}}"
+# .html,.tpl
+suffix = "{{getv "/tmpl/suffix"}}"
+
+[database]
+name = "{{getv "/database/name"}}"
+user_name = "{{getv "/database/user_name"}}"
+pwd  = "{{getv "/database/pwd"}}"
+host = "{{getv "/database/host"}}"
+port = "{{getv "/database/port"}}"
+
+[redis]
+server = "{{getv "/redis/server"}}"
+pwd = "{{getv "/redis/pwd"}}"
+
+[memcached]
+server = "{{getv "/memcached/server"}}"

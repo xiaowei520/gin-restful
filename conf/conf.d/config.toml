@@ -1,0 +1,31 @@
+[template]
+# 模板文件
+src = "config.conf.tmpl"
+# 输出文件
+dest = "./conf/conf.toml"
+
+keys = [
+    "/release_mode",
+    "/log_level",
+    "/session_store",
+    "/cache_store",
+    "/app/name",
+    "/server/graceful",
+    "/server/addr",
+    "/server/domain_api",
+    "/server/domain_web",
+    "/server/domain_socket",
+    "/static/type",
+    "/tmpl/type",
+    "/tmpl/data",
+    "/tmpl/dir",
+    "/tmpl/suffix",
+    "/database/name",
+    "/database/user_name",
+    "/database/pwd",
+    "/database/host",
+    "/database/port",
+    "/redis/server",
+    "/redis/pwd",
+    "/memcached/server",
+]

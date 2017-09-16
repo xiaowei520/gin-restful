@@ -1,0 +1,32 @@
+title = "TOML Example"
+
+# default false
+release_mode = false
+
+# REDIS,FILE,COOKIE(COOKIE Default)
+session_store = "REDIS"
+
+
+# REDIS,MEMCACHED,IN_MEMORY(IN_MEMORY Default)
+cache_store = "REDIS"
+
+[app]
+name = "gin-restful"
+
+[server]
+graceful = true
+addr = ":8080"
+
+# Domains
+domain_api = "echo.api.localhost.com"
+
+[database]
+    name = "dqcenter"
+    user_name = "root"
+    pwd  = ""
+    host = "10.211.55.9"
+    port = "3306"
+
+[redis]
+server = "10.211.55.9:6379"
+pwd = ""
