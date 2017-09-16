@@ -32,7 +32,9 @@ go build -o gin-restful-test-v1.0.0
 ```
 ## 目录结构
 ```sh
-algorithm       Go 语言相关算法 | 语法 分析 doc
+godoc       Go doc
+  ├ algorithm   用go 语言写的算法 主攻 leetcode
+  ├ go_base     go 语言基础 功能分析
 conf            项目配置
 middleware      中间件
 model           模型，数据库连接&ORM
