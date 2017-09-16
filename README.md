@@ -32,6 +32,7 @@ go build -o gin-restful-test-v1.0.0
 ```
 ## 目录结构
 ```sh
+algorithm       Go 语言相关算法 | 语法 分析 doc
 conf            项目配置
 middleware      中间件
 model           模型，数据库连接&ORM
