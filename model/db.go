@@ -17,6 +17,10 @@ const (
 //声明 数据库变量
 var sqlDB *sql.DB
 
+
+func init(){
+	Open()
+}
 /*
 连接数据库
  */

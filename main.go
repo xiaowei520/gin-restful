@@ -4,27 +4,22 @@ import (
 	//	_ "github.com/go-sql-driver/mysql"
 	"database/sql"
 	"fmt"
-	"./model"
 )
 
 var sqlDB *sql.DB
 
 func main() {
 
-	sqlDB = model.Open();
-	//model.Open();
+	//关闭全局数据库连接池
+	defer sqlDB.Close()
 
-	//db,err := sql.Open("mysql", "root:@tcp(10.211.55.9:3306)/dqcenter?charset=utf8")
-	//prerr(err)
-	id := test(sqlDB)
-	//db := opendb("root:@tcp(10.20.70.215:3306)/dqcenter?charset=utf8")
-	//
-	//ids := insert(sqlDB)
-	ids := insert(sqlDB)
-	//query(db)
-	//update(db,id)
-	fmt.Println(id)
-	fmt.Println(ids)
+	//封装路由
+	router := initRouter()
+	router.Run(":8000")
+
+
+
+
 }
 func test(db *sql.DB) int64 {
 	fmt.Println(1)
