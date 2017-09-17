@@ -14,6 +14,7 @@ Go web framework example.
 ```shell
 $ cd $GOPATH/src
 $ git clone git@github.com:xiaowei520/gin-restful.git
+$ go get github.com/gin-gonic/gin  获取gin框架
 ```
 
 ```
