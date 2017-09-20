@@ -42,9 +42,20 @@ func Quick2Sort(values []int) {
 //就空间复杂度来说，主要是递归造成的栈空间的使用，最好情况，递归树的深度为log2n，其空间复杂度也就为O(logn)，最坏情况，需要进行n‐1递归调用，其空间复杂度为O(n)，平均情况，空间复杂度也为O(logn)。
 //由于关键字的比较和交换是跳跃进行的，因此，快速排序是一种不稳定的排序方法。
 
-
 //优化方案  并行的快速排序  快速排序算法是采用分治技术来进行实现的,所以开启多个线程增加实现速度. 但是要考虑 达到指定大小再去goruntine
+//选取基准最好的方法是用一个随机函数产生一个取位于low和high之间的随机数k(low≤k≤high)，用R[k]作为基准，这相当于强迫R[low..high]中的记录是随机分布的。
+// 用此方法所得到的快速排序一般称为随机的快速排序。 这样 能让不稳定的快速排序 趋于稳定
 
+//QuickSort
+//void QuickSort(SeqList R，int low，int high)
+//{ //对R[low..high]快速排序
+//int pivotpos； //划分后的基准记录的位置
+//if (low<high){//仅当区间长度大于1时才须排序
+//pivotpos = Partition(R，low，high)； //对R[low..high]做划分
+//QuickSort(R，low，pivotpos-1)； //对左区间递归排序
+//QuickSort(R，pivotpos+1，high)； //对右区间递归排序
+//}
+//}
 func main() {
 
 	t1 := time.Now() // get current time
