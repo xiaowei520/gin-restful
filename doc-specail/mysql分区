@@ -1,0 +1,37 @@
+自5.1开始对分区(Partition)有支持
+
+水平分区的几种模式:
+* Range（范围）将一个表按照月份划分 如 2017年8月（A区）2017年9月（B区）
+* Hash（哈希）对表的一个或多个列的Hash Key进行计算 到对应Hash分区
+* List（预定义列表）
+* Composite（复合模式）上述组合而已 如 Range 分区内的子分区做Hash   只有RANG和LIST分区能进行子分区。HASH和KEY分区不能进行子分区。
+
+垂直分区（按列分)
+把不经常使用的数据 沉淀起来
+
+
+
+****RANGE分区、LIST分区、HASH分区都要求分区键必须是INT类型，或者通过表达式返回INT类型。***
+分区时 表上建约束索引会有问题
+Partitioning Keys, Primary Keys, and Unique Keys
+
+>mysql
+>show variables like '%per_table%'; 查询分区表是否开启
+>SHOW VARIABLES LIKE '%partition%'; 查看是否支持分区
+
+
+#存储过程-插入100万数据
+CREATE PROCEDURE `load_part_tab`()
+  begin
+    declare v int default 0;
+    while v < 1000000
+    do
+      insert into ucf_account_log
+      values (null,1,1,v+10000000,v+10000000,1,1,1,1,1,1,1,1,1,1,1,1,1);
+      set v = v + 1;
+    end while;
+  end
+    delimiter ;
+call load_part_tab();
+
+
