@@ -1,0 +1,43 @@
+<?php
+header("content-type:text/html;charset=utf-8");
+
+interface A
+{                                //创建接口
+    function a();
+}
+
+interface B
+{
+    function b();
+}
+
+class Php implements A
+{
+    function a()
+    {
+        echo 'php中文网';
+    }
+}
+
+class Html implements A, B
+{
+    function a()
+    {
+        echo 'PHP中文网是免费网站';
+    }
+//    function b()
+//    {
+//        echo 'PHP中文网网址是www.php.cn';
+//    }
+}
+
+$php = new Php();
+$html = new html();
+$php->a();
+echo '<br/>';
+$html->a();
+$html->b();
+
+PHP并不支持多重继承、一个父类可以有多个子类，但是子类只能有一个父类。
+
+上述使用 接口的形式 来模式 多重继承的功能
