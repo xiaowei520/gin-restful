@@ -36,8 +36,8 @@
  * in order to get O(log(N)) INSERT and REMOVE operations into a sorted
  * data structure.
  *
- * The elements are added to a hash table mapping Redis objects to scores.
- * At the same time the elements are added to a skip list mapping scores
+ * 1.The elements are added to a hash table mapping Redis objects to scores.
+ * 2.At the same time the elements are added to a skip list mapping scores
  * to Redis objects (so objects are sorted by scores in this "view").
  *
  * Note that the SDS string representing the element is the same in both
@@ -56,6 +56,16 @@
  * pointers being only at "level 1". This allows to traverse the list
  * from tail to head, useful for ZREVRANGE. */
 
+/*
+有序集合API
+ * 1.元素被添加到哈希表  用来 映射redis对象的分数Score
+ * 2.同时,元素被添加到跳表 用来映射分数。 所以 排序在这里
+
+  跳表用C语言翻译实现,可以代替平衡树 .三个改动点
+  a) 这种实现允许重复评分
+  b)  比较不是通过 score 这个key。而是   satellite data
+  c) 这有一个尾指针,因此是双向链表. 尾指针只允许在level 1 级别。 这允许我们 从头到尾遍历指针,使用ZREVRANGE（从大到小score排序）
+*/
 #include "server.h"
 #include <math.h>
 
