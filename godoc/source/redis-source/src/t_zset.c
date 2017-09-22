@@ -87,9 +87,9 @@ double 分数?
 zskiplistNode *zslCreateNode(int level, double score, sds ele) {
 
     //zmalloc 是zmalloc.c 的函数
+    //开辟内存空间 跳表节点 存储占据 字节 + 等级*结构体 zskiplistLevel 字节
     zskiplistNode *zn =
         zmalloc(sizeof(*zn)+level*sizeof(struct zskiplistLevel));
-
         //节点 score 数据
         //ele 属性  默认自带sds ele
     zn->score = score;
@@ -97,43 +97,47 @@ zskiplistNode *zslCreateNode(int level, double score, sds ele) {
     return zn;
 }
 
-/* Create a new skiplist. */
+/* 创建一个跳表. */
 zskiplist *zslCreate(void) {
     int j;
     zskiplist *zsl;
 
+    //开辟 跳表结构存储字节 内存空间
     zsl = zmalloc(sizeof(*zsl));
-    zsl->level = 1;
-    zsl->length = 0;
-    zsl->header = zslCreateNode(ZSKIPLIST_MAXLEVEL,0,NULL);
-    for (j = 0; j < ZSKIPLIST_MAXLEVEL; j++) {
-        zsl->header->level[j].forward = NULL;
-        zsl->header->level[j].span = 0;
+    zsl->level = 1;//等级1
+    zsl->length = 0;//长度0
+    zsl->header = zslCreateNode(ZSKIPLIST_MAXLEVEL,0,NULL);//跳表 头节点创建   常规 宏定义 32
+    for (j = 0; j < ZSKIPLIST_MAXLEVEL; j++) {  //ZSKIPLIST_MAXLEVEL 次循环 初始化跳级分级结构体
+        zsl->header->level[j].forward = NULL;//前指针 NULL
+        zsl->header->level[j].span = 0;  //子span 为0
     }
-    zsl->header->backward = NULL;
-    zsl->tail = NULL;
+    zsl->header->backward = NULL;  //头节点 的 尾指针NUll
+    zsl->tail = NULL; //尾节点 NULL
     return zsl;
 }
 
 /* Free the specified skiplist node. The referenced SDS string representation
  * of the element is freed too, unless node->ele is set to NULL before calling
  * this function. */
+ //释放 跳表节点
 void zslFreeNode(zskiplistNode *node) {
     sdsfree(node->ele);
     zfree(node);
 }
 
 /* Free a whole skiplist. */
+//释放整个跳表结构
 void zslFree(zskiplist *zsl) {
-    zskiplistNode *node = zsl->header->level[0].forward, *next;
+    zskiplistNode *node = zsl->header->level[0].forward, *next;///获取头结点第0层级的前指针
 
-    zfree(zsl->header);
-    while(node) {
-        next = node->level[0].forward;
-        zslFreeNode(node);
-        node = next;
+    zfree(zsl->header);//释放头节点
+    while(node) {  //循环释放      好比1->2->3->4->....->32
+
+        next = node->level[0].forward;//前置指针 赋给 下一个next 指针变量
+        zslFreeNode(node);//释放当前node 节点
+        node = next;// 将下一个指针传递给node
     }
-    zfree(zsl);
+    zfree(zsl);//整体释放跳表
 }
 
 /* Returns a random level for the new skiplist node we are going to create.

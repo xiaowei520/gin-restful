@@ -12,6 +12,10 @@ func Quick2Sort(values []int) {
 	}
 	mid, i := values[0], 1
 	head, tail := 0, len(values)-1
+
+
+	j:=0
+
 	for head < tail {
 		//	fmt.Println(values)
 		if values[i] > mid {
@@ -22,7 +26,13 @@ func Quick2Sort(values []int) {
 			head++
 			i++
 		}
+
+		j++
+		if j==3 {
+			return
+		}
 	}
+	return
 	values[head] = mid
 	Quick2Sort(values[:head])
 	Quick2Sort(values[head+1:])
@@ -62,11 +72,11 @@ func main() {
 
 	//	var number = []int{9,8,7,6,5,4,3,2,1}
 	var number = []int{1, 2, 3, 9, 8, 7, 6, 5, 4, 100, 101, 102, 103, 104, 105, 106, 107}
-	for k := 0; k < 1000000; k++ {
+	//for k := 0; k < 1000000; k++ {
 
 		Quick2Sort(number) // 168.080817ms
-	}
-
+//	}
+	fmt.Println(number)
 	elapsed := time.Since(t1)
 	fmt.Println("App elapsed: ", elapsed)
 }

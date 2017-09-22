@@ -756,25 +756,27 @@ struct sharedObjectsStruct {
 };
 
 /* ZSETs use a specialized version of Skiplists */
+//ZSETs  使用专用 跳表 版本
+//跳表节点  结构体
 typedef struct zskiplistNode {
     sds ele;
-    double score;
-    struct zskiplistNode *backward;
-    struct zskiplistLevel {
-        struct zskiplistNode *forward;
-        unsigned int span;
+    double score;//分数
+    struct zskiplistNode *backward;//跳表节点  后指针
+    struct zskiplistLevel {//跳表分级结构体
+        struct zskiplistNode *forward;//前指针
+        unsigned int span;  //子分级
     } level[];
 } zskiplistNode;
 
-typedef struct zskiplist {
-    struct zskiplistNode *header, *tail;
-    unsigned long length;
-    int level;
+typedef struct zskiplist {  //跳表
+    struct zskiplistNode *header, *tail;   //由跳表节点 结构体组成 头尾指针
+    unsigned long length; //长度
+    int level;//等级
 } zskiplist;
 
-typedef struct zset {
-    dict *dict;
-    zskiplist *zsl;
+typedef struct zset {// zset 有序集合
+    dict *dict;     //
+    zskiplist *zsl; //跳表列表 指针
 } zset;
 
 typedef struct clientBufferLimitsConfig {
