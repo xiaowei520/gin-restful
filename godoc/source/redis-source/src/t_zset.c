@@ -78,9 +78,20 @@ int zslLexValueLteMax(sds value, zlexrangespec *spec);
 
 /* Create a skiplist node with the specified number of levels.
  * The SDS string 'ele' is referenced by the node after the call. */
+
+/*
+创建一个跳表节点 带有 等级的
+double 分数?
+调用后的节点引用SDS字符串 'ele'
+*/
 zskiplistNode *zslCreateNode(int level, double score, sds ele) {
+
+    //zmalloc 是zmalloc.c 的函数
     zskiplistNode *zn =
         zmalloc(sizeof(*zn)+level*sizeof(struct zskiplistLevel));
+
+        //节点 score 数据
+        //ele 属性  默认自带sds ele
     zn->score = score;
     zn->ele = ele;
     return zn;

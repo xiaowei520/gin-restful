@@ -95,9 +95,12 @@ static void zmalloc_default_oom(size_t size) {
 static void (*zmalloc_oom_handler)(size_t) = zmalloc_default_oom;
 
 void *zmalloc(size_t size) {
-    void *ptr = malloc(size+PREFIX_SIZE);
 
-    if (!ptr) zmalloc_oom_handler(size);
+    //malloc 调用 分配的大小是 size + PREFIX_SIZE  PREFIX_SIZE 是个宏 不同平台不一样
+    //malloc 向系统申请多少个size的字节
+    void *ptr = malloc(size+PREFIX_SIZE);
+    //如果分配失败  返回NULL 空指针  如果  分配成功则返回指向被分配内存的指针(此存储区中的初始值不确定)
+    if (!ptr) zmalloc_oom_handler(size);//清空 size 缓存区
 #ifdef HAVE_MALLOC_SIZE
     update_zmalloc_stat_alloc(zmalloc_size(ptr));
     return ptr;
