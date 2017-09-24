@@ -764,7 +764,7 @@ typedef struct zskiplistNode {
     struct zskiplistNode *backward;//跳表节点  后指针
     struct zskiplistLevel {//跳表分级结构体
         struct zskiplistNode *forward;//前指针
-        unsigned int span;  //子分级
+        unsigned int span;  //中间子节点个数
     } level[];
 } zskiplistNode;
 
@@ -775,8 +775,8 @@ typedef struct zskiplist {  //跳表
 } zskiplist;
 
 typedef struct zset {// zset 有序集合
-    dict *dict;     //
-    zskiplist *zsl; //跳表列表 指针
+    dict *dict;     // 字典 维护map
+    zskiplist *zsl; //跳表列表 指针 主要用于维护分数
 } zset;
 
 typedef struct clientBufferLimitsConfig {

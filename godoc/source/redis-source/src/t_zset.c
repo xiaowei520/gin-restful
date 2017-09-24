@@ -243,6 +243,8 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
 }
 
 /* Internal function used by zslDelete, zslDeleteByScore and zslDeleteByRank */
+
+//这个删除节点只是将指针的 各层级指向改变
 void zslDeleteNode(zskiplist *zsl, zskiplistNode *x, zskiplistNode **update) {
     int i;
     for (i = 0; i < zsl->level; i++) {
@@ -272,6 +274,7 @@ void zslDeleteNode(zskiplist *zsl, zskiplistNode *x, zskiplistNode **update) {
  * so that it is possible for the caller to reuse the node (including the
  * referenced SDS string at node->ele). */
 int zslDelete(zskiplist *zsl, double score, sds ele, zskiplistNode **node) {
+    // update 记录降层节点
     zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
     int i;
 
@@ -289,9 +292,9 @@ int zslDelete(zskiplist *zsl, double score, sds ele, zskiplistNode **node) {
     }
     /* We may have multiple elements with the same score, what we need
      * is to find the element with both the right score and object. */
-    x = x->level[0].forward;
+    x = x->level[0].forward;//定位到第一行 就是 0层级的 要删除的指针位置
     if (x && score == x->score && sdscmp(x->ele,ele) == 0) {
-        zslDeleteNode(zsl, x, update);
+        zslDeleteNode(zsl, x, update);//删除x 节点
         if (!node)
             zslFreeNode(x);
         else
