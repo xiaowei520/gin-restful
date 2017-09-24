@@ -144,6 +144,7 @@ void zslFree(zskiplist *zsl) {
  * The return value of this function is between 1 and ZSKIPLIST_MAXLEVEL
  * (both inclusive), with a powerlaw-alike distribution where higher
  * levels are less likely to be returned. */
+ //随机返回 跳表等级
 int zslRandomLevel(void) {
     int level = 1;
     while ((random()&0xFFFF) < (ZSKIPLIST_P * 0xFFFF))
@@ -154,61 +155,79 @@ int zslRandomLevel(void) {
 /* Insert a new node in the skiplist. Assumes the element does not already
  * exist (up to the caller to enforce that). The skiplist takes ownership
  * of the passed SDS string 'ele'. */
+
+ //插入跳转节点
+
+//  算法思想：可将跳表看做是 ZSKIPLIST_MAXLEVEL +1 条 普通的链表，在跳表中插入节点，就是寻找插
+//  入节点在每一级中的插入位置(并保存), 然后根据插入节点的级ZSKIPLIST_MAXLEVEL，在0-ZSKIPLIST_MAXLEVEL级的ZSKIPLIST_MAXLEVEL+1
+//  条普通链表中依次插入节点
 zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
     zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
-    unsigned int rank[ZSKIPLIST_MAXLEVEL];
+    unsigned int rank[ZSKIPLIST_MAXLEVEL];//保存每一级插入的位置
     int i, level;
 
     serverAssert(!isnan(score));
-    x = zsl->header;
-    for (i = zsl->level-1; i >= 0; i--) {
+    x = zsl->header;//跳表头指针 赋给变量x
+    for (i = zsl->level-1; i >= 0; i--) {//从头结点 开始扫描所有级
         /* store rank that is crossed to reach the insert position */
+        //将跳表等级 按照
         rank[i] = i == (zsl->level-1) ? 0 : rank[i+1];
+        //当 跳表分级结构的第[i] 元素 的 头指针不是null 且 (它比传入的score 小 或(它等于score 且他的ele占据小于传入的ele)))
+        //
+        //
         while (x->level[i].forward &&
                 (x->level[i].forward->score < score ||
                     (x->level[i].forward->score == score &&
                     sdscmp(x->level[i].forward->ele,ele) < 0)))
         {
-            rank[i] += x->level[i].span;
-            x = x->level[i].forward;
+            rank[i] += x->level[i].span;//那就执行  将 x头指针span 与rank[i] 加在一起 并赋值给rank[i]
+            x = x->level[i].forward;//头指针传递给x
         }
-        update[i] = x;
+        update[i] = x;//更新i
     }
     /* we assume the element is not already inside, since we allow duplicated
      * scores, reinserting the same element should never happen since the
      * caller of zslInsert() should test in the hash table if the element is
      * already inside or not. */
-    level = zslRandomLevel();
-    if (level > zsl->level) {
-        for (i = zsl->level; i < level; i++) {
+    level = zslRandomLevel();//随机获取跳表等级
+    if (level > zsl->level) {//随机数值 比当前跳表level大的话
+        for (i = zsl->level; i < level; i++) {//递增 补缺空
             rank[i] = 0;
-            update[i] = zsl->header;
-            update[i]->level[i].span = zsl->length;
+            update[i] = zsl->header;//头指针赋值
+            update[i]->level[i].span = zsl->length;//跳表长度赋值给子节点的span
         }
-        zsl->level = level;
+        zsl->level = level;//更新 跳表level  其实就是对大于跳表的level 赋值
     }
+    //创建 新节点 -最大level 分数
     x = zslCreateNode(level,score,ele);
+
+    //调整新节点每一级的指针,以及该节点前后前后的 指针关系
     for (i = 0; i < level; i++) {
-        x->level[i].forward = update[i]->level[i].forward;
-        update[i]->level[i].forward = x;
+        x->level[i].forward = update[i]->level[i].forward;//将上述update的赋值跳表结构传递给刚才新创建的节点x
+        update[i]->level[i].forward = x;//将update 前指针 变为x 跳表节点
 
         /* update span covered by update[i] as x is inserted here */
+        //将子span 等级-rank[0]+rank[i] 传给x 的子span
         x->level[i].span = update[i]->level[i].span - (rank[0] - rank[i]);
+        //赋值update子span
         update[i]->level[i].span = (rank[0] - rank[i]) + 1;
     }
 
     /* increment span for untouched levels */
+
+    //如果level 随机的比 跳表原本level小.那么 比level大的 level结构的子span 自+1
     for (i = level; i < zsl->level; i++) {
         update[i]->level[i].span++;
     }
 
+    //尾指针节点 赋值 如果 update[0] 和头指针一样 就是null 因为重叠,就一个节点.不需要尾指针
     x->backward = (update[0] == zsl->header) ? NULL : update[0];
-    if (x->level[0].forward)
-        x->level[0].forward->backward = x;
+    if (x->level[0].forward)//如果第一层级的头节点不是null
+        x->level[0].forward->backward = x;//将它赋值头节点的 尾指针
     else
-        zsl->tail = x;
-    zsl->length++;
-    return x;
+        zsl->tail = x;//尾指针
+    zsl->length++;//长度 自+1
+    return x;//返回 插入后的 跳表
 }
 
 /* Internal function used by zslDelete, zslDeleteByScore and zslDeleteByRank */
