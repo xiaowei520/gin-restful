@@ -66,6 +66,16 @@
   b)  比较不是通过 score 这个key。而是   satellite data
   c) 这有一个尾指针,因此是双向链表. 尾指针只允许在level 1 级别。 这允许我们 从头到尾遍历指针,使用ZREVRANGE（从大到小score排序）
 */
+
+/*
+自我感觉数组形式
+等级 3   -1      7    9
+等级 2   -1   5    7  9
+等级 1   -1 2 5 6 7 8 9
+等级N中 每个节点都由两个指针,一个指向同等级下一个元素 一个指向低等级 的同一个元素
+
+最低等级是 1   。。。因为1等级有所有元素
+*/
 #include "server.h"
 #include <math.h>
 
@@ -161,6 +171,8 @@ int zslRandomLevel(void) {
 //  算法思想：可将跳表看做是 ZSKIPLIST_MAXLEVEL +1 条 普通的链表，在跳表中插入节点，就是寻找插
 //  入节点在每一级中的插入位置(并保存), 然后根据插入节点的级ZSKIPLIST_MAXLEVEL，在0-ZSKIPLIST_MAXLEVEL级的ZSKIPLIST_MAXLEVEL+1
 //  条普通链表中依次插入节点
+
+
 zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
     zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
     unsigned int rank[ZSKIPLIST_MAXLEVEL];//保存每一级插入的位置
@@ -168,7 +180,7 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
 
     serverAssert(!isnan(score));
     x = zsl->header;//跳表头指针 赋给变量x
-    for (i = zsl->level-1; i >= 0; i--) {//从头结点 开始扫描所有级
+    for (i = zsl->level-1; i >= 0; i--) {//从头结点 开始扫描所有级-最高层开始
         /* store rank that is crossed to reach the insert position */
         //将跳表等级 按照
         rank[i] = i == (zsl->level-1) ? 0 : rank[i+1];
@@ -189,7 +201,7 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
      * scores, reinserting the same element should never happen since the
      * caller of zslInsert() should test in the hash table if the element is
      * already inside or not. */
-    level = zslRandomLevel();//随机获取跳表等级
+    level = zslRandomLevel();//随机获取跳表等级 -插入到哪个层
     if (level > zsl->level) {//随机数值 比当前跳表level大的话
         for (i = zsl->level; i < level; i++) {//递增 补缺空
             rank[i] = 0;
@@ -226,7 +238,7 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
         x->level[0].forward->backward = x;//将它赋值头节点的 尾指针
     else
         zsl->tail = x;//尾指针
-    zsl->length++;//长度 自+1
+    zsl->length++;//长度 自+1 就是 跳表的总元素节点个数
     return x;//返回 插入后的 跳表
 }
 
@@ -234,11 +246,11 @@ zskiplistNode *zslInsert(zskiplist *zsl, double score, sds ele) {
 void zslDeleteNode(zskiplist *zsl, zskiplistNode *x, zskiplistNode **update) {
     int i;
     for (i = 0; i < zsl->level; i++) {
-        if (update[i]->level[i].forward == x) {
-            update[i]->level[i].span += x->level[i].span - 1;
-            update[i]->level[i].forward = x->level[i].forward;
+        if (update[i]->level[i].forward == x) {//// 每层分级找到要删除的元素
+            update[i]->level[i].span += x->level[i].span - 1;//将该要删除的节点内包含的子节点个数 -1 再加上
+            update[i]->level[i].forward = x->level[i].forward;//将该元素前指针变更
         } else {
-            update[i]->level[i].span -= 1;
+            update[i]->level[i].span -= 1;//如果在该层级没有找到该节点,直接将该曾记得子span-1就好了。证明少了个元素
         }
     }
     if (x->level[0].forward) {
@@ -263,6 +275,7 @@ int zslDelete(zskiplist *zsl, double score, sds ele, zskiplistNode **node) {
     zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
     int i;
 
+    //循环查找要删掉的节点 然后传递到update 这个分级数组内
     x = zsl->header;
     for (i = zsl->level-1; i >= 0; i--) {
         while (x->level[i].forward &&
@@ -462,19 +475,23 @@ unsigned long zslDeleteRangeByRank(zskiplist *zsl, unsigned int start, unsigned 
  * Returns 0 when the element cannot be found, rank otherwise.
  * Note that the rank is 1-based due to the span of zsl->header to the
  * first element. */
+ //通过score查询 该元素的score和key 找不到返回0  从header 节点开始查找
 unsigned long zslGetRank(zskiplist *zsl, double score, sds ele) {
     zskiplistNode *x;
     unsigned long rank = 0;
     int i;
 
     x = zsl->header;
+    //所有等级遍历一遍 从最高等级开始
     for (i = zsl->level-1; i >= 0; i--) {
+
+         //如果找的score 比这个等级的下一个元素大
         while (x->level[i].forward &&
             (x->level[i].forward->score < score ||
                 (x->level[i].forward->score == score &&
                 sdscmp(x->level[i].forward->ele,ele) <= 0))) {
-            rank += x->level[i].span;
-            x = x->level[i].forward;
+            rank += x->level[i].span;//每个元素下面
+            x = x->level[i].forward;//继续往下比较 -将下一个指针指向同一行的下一个
         }
 
         /* x might be equal to zsl->header, so test if obj is non-NULL */
