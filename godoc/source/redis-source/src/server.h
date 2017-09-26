@@ -761,17 +761,17 @@ struct sharedObjectsStruct {
 typedef struct zskiplistNode {
     sds ele;
     double score;//分数
-    struct zskiplistNode *backward;//跳表节点  后指针
+    struct zskiplistNode *backward;//跳表节点  后退指针
     struct zskiplistLevel {//跳表分级结构体
-        struct zskiplistNode *forward;//前指针
+        struct zskiplistNode *forward;//前进指针
         unsigned int span;  //中间子节点个数
     } level[];
 } zskiplistNode;
 
 typedef struct zskiplist {  //跳表
-    struct zskiplistNode *header, *tail;   //由跳表节点 结构体组成 头尾指针
-    unsigned long length; //长度
-    int level;//等级
+    struct zskiplistNode *header, *tail;   //header 表头节点 tail 表尾节点
+    unsigned long length; //长度 节点个数
+    int level;//层级
 } zskiplist;
 
 typedef struct zset {// zset 有序集合
