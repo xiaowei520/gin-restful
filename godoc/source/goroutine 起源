@@ -3,3 +3,32 @@
 一个进程可以有多个线程，CPU在执行调度的时候切换的是线程，如果下一个线程也是当前进程的，就只有线程切换，“很快”就能完成，
 如果下一个线程不是当前的进程，就需要切换进程，这就得费点时间了。
 
+线程分为内核态线程和用户态线程，用户态线程需要绑定内核态线程，CPU并不能感知用户态线程的存在，它只知道它在运行1个线程，
+这个线程实际是内核态线程。
+
+用户态线程实际有个名字叫协程（co-routine），为了容易区分，我们使用协程指用户态线程，使用线程指内核态线程。
+协程跟线程是有区别的，线程由CPU调度是抢占式的，协程由用户态调度是协作式的，一个协程让出CPU后，才执行下一个协程。
+N:1，N个协程绑定1个线程，优点就是协程在用户态线程即完成切换，不会陷入到内核态，这种切换非常的轻量快速。但也有很大的缺点，1个进程的所有协程都绑定在1个线程上，一是某个程序用不了硬件的多核加速能力，二是一旦某协程阻塞，造成线程阻塞，本进程的其他协程都无法执行了，根本就没有并发的能力了。
+1:1，1个协程绑定1个线程，这种最容易实现。协程的调度都由CPU完成了，不存在N:1缺点，但有一个缺点是协程的创建、删除和切换的代价都由CPU完成，有点略显昂贵了。
+M:N，M个协程绑定1个线程，是N:1和1:1类型的结合，克服了以上2种模型的缺点，但实现起来最为复杂。
+
+
+
+
+紧接着 引入了 goroutine 概念
+调度器的有两大思想：
+复用线程：协程本身就是运行在一组线程之上，不需要频繁的创建、销毁线程，而是对线程的复用。在调度器中复用线程还有2个体现：1）work stealing，当本线程无可运行的G时，尝试从其他线程绑定的P偷取G，而不是销毁线程。2）handoff，当本线程因为G进行系统调用阻塞时，线程释放绑定的P，把P转移给其他空闲的线程执行。
+
+利用并行：GOMAXPROCS设置P的数量，当GOMAXPROCS大于1时，就最多有GOMAXPROCS个线程处于运行状态，这些线程可能分布在多个CPU核上同时运行，使得并发利用并行。另外，GOMAXPROCS也限制了并发的程度，比如GOMAXPROCS = 核数/2，则最多利用了一半的CPU核进行并行。
+
+调度器的两小策略：
+
+抢占：在coroutine中要等待一个协程主动让出CPU才执行下一个协程，在Go中，一个goroutine最多占用CPU 10ms，防止其他goroutine被饿死，这就是goroutine不同于coroutine的一个地方。
+
+全局G队列：在新的调度器中依然有全局G队列，但功能已经被弱化了，当M执行work stealing从其他P偷不到G时，它可以从全局G队列获取G。
+
+
+
+
+https://mp.weixin.qq.com/s?__biz=Mzg3MTA0NDQ1OQ==&mid=2247483869&idx=1&sn=bf6f038dbe6c7bde5954fc37c0e449b5&chksm=ce85c5d9f9f24ccf864f214180aa3a035d35b041de0f026ef20023b873c15284fbca28b82462&mpshare=1&scene=1&srcid=0401BXF435Ym6hDtomsmtA3t&key=bd9dbb3d8b76afd608f0098097c5520caef2ad3b337a46ee8fcc5a2b08c3f98646943faea9fa57dc974dae0d01b388813a41810639646ee8c2a1e9018f3ae039d04e361b4acd174b290bdd3d56bdb6f4&ascene=0&uin=NjAwMTEzNTAy&devicetype=iMac+MacBookPro11%2C4+OSX+OSX+10.10.4+build(14E46)&version=11020201&lang=zh_CN&pass_ticket=GDYGFx%2FUHKLnpJnGM8mGGy4yGTP2UQuo6AEyoe0RBtIhNpvnWsVjGv9iemzrIYGR
+
